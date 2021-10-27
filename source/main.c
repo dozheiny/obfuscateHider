@@ -2,12 +2,23 @@
 
 // limit file size [1MB]
 #define MAX_FILE_SIZE (1024 * 1024)
-int main()
+
+int main(int argc, char **args)
 {
+		if (argc < 2) {
+			printf("usage: %s <file name>\n\n", args[0]);
+			return 1;
+		}
+
+		char *filename = args[1];
 		FILE *fptr;
 		char data[MAX_FILE_SIZE];
 
-		fptr = fopen("pic.jpg", "rb"); //open file
+		fptr = fopen(filename, "rb"); //open file
+		if (fptr == NULL) {
+			perror(filename);
+			return 1;
+		}
 
 		int i = 0;
 		while (!feof(fptr)) // reading file
@@ -16,7 +27,11 @@ int main()
 		}
 		fclose(fptr);	
 
-		fptr = fopen("pic.jpg", "wb"); // writing file
+		fptr = fopen(filename, "wb"); // writing file
+		if (fptr == NULL) {
+			perror(filename);
+			return 1;
+		}
 
 		for(int j=0; j<i; j++)
 		{
