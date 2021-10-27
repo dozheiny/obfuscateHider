@@ -14,6 +14,7 @@ int main(int argc, char **args)
 		FILE *fptr;
 		char chunk[CHUNK_SIZE];
 		long int position;
+		long int size;
 
 		// open file
 		fptr = fopen(filename, "rb+");
@@ -24,6 +25,11 @@ int main(int argc, char **args)
 
 		// set position
 		position = ftell(fptr);
+
+		// get file size
+		fseek(fptr, 0, SEEK_END);
+		size = ftell(fptr);
+		rewind(fptr);
 
 		size_t count;
 		while (1) {
@@ -44,9 +50,14 @@ int main(int argc, char **args)
 
 			// count is less than CHUNK_SIZE when we reach to end of file
 			if (count != CHUNK_SIZE) break;
+
+			// show progress
+			printf("Progress: %02d%%\r", position*100/size);
 		}
 		
 		fclose(fptr); // close file
+
+		printf("Done!         \n");
 
 		return 0;
 }
