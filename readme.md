@@ -4,7 +4,7 @@
 * [usage](#usage)
 
 ## General info
-This program helps you hide your image and gif porn files (<h3>limit 1MB</h3>)
+This program helps you hide your image and gif porn files
 
 ## Setup
 first install git:

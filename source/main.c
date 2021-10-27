@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-// limit file size [1MB]
-#define MAX_FILE_SIZE (1024 * 1024)
+// Set chunk size to 1MB
+#define CHUNK_SIZE (1024*1024)
 
 int main(int argc, char **args)
 {
@@ -12,32 +12,41 @@ int main(int argc, char **args)
 
 		char *filename = args[1];
 		FILE *fptr;
-		char data[MAX_FILE_SIZE];
+		char chunk[CHUNK_SIZE];
+		long int position;
 
-		fptr = fopen(filename, "rb"); //open file
+		// open file
+		fptr = fopen(filename, "rb+");
 		if (fptr == NULL) {
 			perror(filename);
 			return 1;
 		}
 
-		int i = 0;
-		while (!feof(fptr)) // reading file
-		{
-				data[i++] = fgetc(fptr);
-		}
-		fclose(fptr);	
+		// set position
+		position = ftell(fptr);
 
-		fptr = fopen(filename, "wb"); // writing file
-		if (fptr == NULL) {
-			perror(filename);
-			return 1;
-		}
+		size_t count;
+		while (1) {
+			// read a chunk
+			count = fread(chunk, 1, CHUNK_SIZE, fptr);
+			
+			// encrypt or decrypt chunk
+			for (int i = 0; i < count; i++) {
+				chunk[i] = (chunk[i]^0x60);
+			}
 
-		for(int j=0; j<i; j++)
-		{
-			fputc((data[j] ^ 0x60), fptr);
+			// seek to start of chunk and write back
+			fseek(fptr, position, SEEK_SET);
+			fwrite(chunk, 1, count, fptr);
+
+			// save position
+			position = ftell(fptr);
+
+			// count is less than CHUNK_SIZE when we reach to end of file
+			if (count != CHUNK_SIZE) break;
 		}
-		fclose(fptr);
+		
+		fclose(fptr); // close file
 
 		return 0;
 }
