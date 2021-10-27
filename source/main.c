@@ -1,28 +1,63 @@
 #include <stdio.h>
 
-// limit file size [1MB]
-#define MAX_FILE_SIZE (1024 * 1024)
-int main()
+// Set chunk size to 1MB
+#define CHUNK_SIZE (1024*1024)
+
+int main(int argc, char **args)
 {
+		if (argc < 2) {
+			printf("usage: %s <file name>\n\n", args[0]);
+			return 1;
+		}
+
+		char *filename = args[1];
 		FILE *fptr;
-		char data[MAX_FILE_SIZE];
+		char chunk[CHUNK_SIZE];
+		long int position;
+		long int size;
 
-		fptr = fopen("pic.jpg", "rb"); //open file
-
-		int i = 0;
-		while (!feof(fptr)) // reading file
-		{
-				data[i++] = fgetc(fptr);
+		// open file
+		fptr = fopen(filename, "rb+");
+		if (fptr == NULL) {
+			perror(filename);
+			return 1;
 		}
-		fclose(fptr);	
 
-		fptr = fopen("pic.jpg", "wb"); // writing file
+		// set position
+		position = ftell(fptr);
 
-		for(int j=0; j<i; j++)
-		{
-			fputc((data[j] ^ 0x60), fptr);
+		// get file size
+		fseek(fptr, 0, SEEK_END);
+		size = ftell(fptr);
+		rewind(fptr);
+
+		size_t count;
+		while (1) {
+			// read a chunk
+			count = fread(chunk, 1, CHUNK_SIZE, fptr);
+			
+			// encrypt or decrypt chunk
+			for (int i = 0; i < count; i++) {
+				chunk[i] = (chunk[i]^0x60);
+			}
+
+			// seek to start of chunk and write back
+			fseek(fptr, position, SEEK_SET);
+			fwrite(chunk, 1, count, fptr);
+
+			// save position
+			position = ftell(fptr);
+
+			// count is less than CHUNK_SIZE when we reach to end of file
+			if (count != CHUNK_SIZE) break;
+
+			// show progress
+			printf("Progress: %02d%%\r", position*100/size);
 		}
-		fclose(fptr);
+		
+		fclose(fptr); // close file
+
+		printf("Done!         \n");
 
 		return 0;
 }
