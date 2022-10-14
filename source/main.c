@@ -52,7 +52,7 @@ int main(int argc, char **args)
 			if (count != CHUNK_SIZE) break;
 
 			// show progress
-			printf("Progress: %02d%%\r", position*100/size);
+			printf("Progress: %02ld%%\r", position*100/size);
 		}
 		
 		fclose(fptr); // close file
